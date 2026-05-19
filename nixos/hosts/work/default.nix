@@ -11,11 +11,10 @@
       efiSupport = true;
       device = "nodev";
       useOSProber = true;
-      efiInstallAsRemovable = true;
     };
 
     efi = {
-      canTouchEfiVariables = false;
+      canTouchEfiVariables = true;
       efiSysMountPoint = "/boot/efi";
     };
   };
