@@ -1,0 +1,195 @@
+" ── Catppuccin Macchiato colours ─────────────────────────────────────────────
+" teal  #8bd5ca  →  which-key command colour
+" pink  #f5bde6  →  which-key prefix colour
+
+" ── Base settings ─────────────────────────────────────────────────────────────
+set scrolloff=8
+set relativenumber number
+set showmode
+set showcmd
+set smartcase
+set ignorecase
+set incsearch
+set hlsearch
+set visualbell
+set clipboard+=unnamedplus
+
+let mapleader = " "
+
+" ── Plugins ───────────────────────────────────────────────────────────────────
+set surround
+set highlightedyank
+set sneak
+set nerdtree
+set ideajoin
+set commentary
+
+set easymotion
+set notimeout
+
+set which-key
+let g:WhichKey_FontSize = 16
+let g:WhichKey_CommandColor = "#8bd5ca"
+let g:WhichKey_PrefixColor = "#f5bde6"
+let g:WhichKey_SortOrder = "by_key_prefix_first"
+let g:WhichKey_ShowVimActions = "false"
+
+" ── Which-key descriptions ────────────────────────────────────────────────────
+let g:WhichKeyDesc_leader        = "<leader>  Leader"
+
+let g:WhichKeyDesc_find          = "<leader><leader>  Recent files"
+
+let g:WhichKeyDesc_save          = "<leader>s  Save file"
+let g:WhichKeyDesc_quit          = "<leader>q  Close tab"
+let g:WhichKeyDesc_nohl          = "<leader>n  Clear highlights"
+
+let g:WhichKeyDesc_file          = "<leader>f  File"
+let g:WhichKeyDesc_file_find     = "<leader>ff  Go to file"
+let g:WhichKeyDesc_file_content  = "<leader>fc  Search in files"
+let g:WhichKeyDesc_file_recent   = "<leader>fr  Recent files"
+let g:WhichKeyDesc_file_location = "<leader>fl  Recent locations"
+let g:WhichKeyDesc_file_scratch  = "<leader>fs  New scratch file"
+
+let g:WhichKeyDesc_explorer      = "<leader>e  File explorer"
+
+let g:WhichKeyDesc_action        = "<leader>a  Actions"
+let g:WhichKeyDesc_action_menu   = "<leader>am  Context menu"
+let g:WhichKeyDesc_action_search = "<leader>as  Search everywhere"
+
+let g:WhichKeyDesc_window        = "<leader>w  Window"
+let g:WhichKeyDesc_window_v      = "<leader>wv  Split vertically"
+let g:WhichKeyDesc_window_h      = "<leader>wh  Split horizontally"
+let g:WhichKeyDesc_window_u      = "<leader>wu  Unsplit"
+let g:WhichKeyDesc_window_m      = "<leader>wm  Move to opposite group"
+
+let g:WhichKeyDesc_goto          = "<leader>g  Go to"
+let g:WhichKeyDesc_goto_def      = "<leader>gd  Definition"
+let g:WhichKeyDesc_goto_type     = "<leader>gy  Type definition"
+let g:WhichKeyDesc_goto_impl     = "<leader>gi  Implementation"
+let g:WhichKeyDesc_goto_usage    = "<leader>gu  Usages"
+let g:WhichKeyDesc_goto_test     = "<leader>gt  Test"
+let g:WhichKeyDesc_goto_back     = "<leader>gb  Go back"
+let g:WhichKeyDesc_goto_forward  = "<leader>gf  Go forward"
+
+let g:WhichKeyDesc_git           = "<leader>G  Git"
+let g:WhichKeyDesc_git_commit    = "<leader>Gc  Commit"
+let g:WhichKeyDesc_git_status    = "<leader>Gs  Status"
+let g:WhichKeyDesc_git_branches  = "<leader>Gb  Branches"
+let g:WhichKeyDesc_git_push      = "<leader>Gp  Push"
+let g:WhichKeyDesc_git_pull      = "<leader>Gl  Pull"
+
+let g:WhichKeyDesc_refactor      = "<leader>r  Refactor"
+let g:WhichKeyDesc_refactor_rn   = "<leader>rn  Rename"
+let g:WhichKeyDesc_refactor_rm   = "<leader>rm  Extract method"
+let g:WhichKeyDesc_refactor_rv   = "<leader>rv  Introduce variable"
+let g:WhichKeyDesc_refactor_rf   = "<leader>rf  Introduce field"
+let g:WhichKeyDesc_refactor_rs   = "<leader>rs  Change signature"
+let g:WhichKeyDesc_refactor_all  = "<leader>rr  All refactorings"
+
+let g:WhichKeyDesc_diag          = "<leader>x  Diagnostics"
+let g:WhichKeyDesc_diag_next     = "<leader>xn  Next error"
+let g:WhichKeyDesc_diag_prev     = "<leader>xp  Previous error"
+let g:WhichKeyDesc_diag_show     = "<leader>xx  Show error"
+
+let g:WhichKeyDesc_fold          = "<leader>z  Fold"
+let g:WhichKeyDesc_fold_close    = "<leader>zc  Collapse all"
+let g:WhichKeyDesc_fold_open     = "<leader>zo  Expand all"
+
+let g:WhichKeyDesc_jump          = "<leader>j  Jump (easymotion)"
+
+" ── Key mappings ──────────────────────────────────────────────────────────────
+
+" Save / close
+nmap <leader>s <Action>(SaveAll)
+map  <leader>q <Action>(CloseContent)
+
+" Clear search highlights
+nmap <leader>n <Action>(ClearSearchHighlightsAction)
+
+" File explorer
+map <leader>e :NERDTreeToggle<CR>
+
+" Tab navigation
+nnoremap <S-l> <Action>(NextTab)
+nnoremap <S-h> <Action>(PreviousTab)
+
+" Pane navigation
+nnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
+nnoremap <C-k> <C-w>k
+nnoremap <C-j> <C-w>j
+
+" Jump between methods
+nnoremap [[ <Action>(MethodUp)
+nnoremap ]] <Action>(MethodDown)
+
+" Visual indentation — stay in visual mode
+vnoremap < <gv
+vnoremap > >gv
+
+" Popup menu navigation
+inoremap <C-j> <Action>(PopupMenu-selectNext)
+inoremap <C-k> <Action>(PopupMenu-selectPrev)
+
+" Macro: run 'q' register with qj
+nnoremap qj @q
+
+" Hover / show error under cursor
+nmap <S-k> <Action>(ShowErrorDescription)
+
+" ── File navigation ───────────────────────────────────────────────────────────
+map <leader><leader> <Action>(RecentFiles)
+map <leader>ff <Action>(GotoFile)
+map <leader>fc <Action>(FindInPath)
+map <leader>fr <Action>(RecentFiles)
+map <leader>fl <Action>(RecentLocations)
+map <leader>fs <Action>(NewScratchFile)
+
+" ── Actions ───────────────────────────────────────────────────────────────────
+map <leader>am <Action>(ShowIntentionActions)
+map <leader>as <Action>(SearchEverywhere)
+
+" ── Window splits ─────────────────────────────────────────────────────────────
+map <leader>wv <Action>(SplitVertically)
+map <leader>wh <Action>(SplitHorizontally)
+map <leader>wu <Action>(Unsplit)
+map <leader>wm <Action>(MoveEditorToOppositeTabGroup)
+
+" ── Go to code ────────────────────────────────────────────────────────────────
+nmap <leader>gd <Action>(GotoDeclaration)
+nmap <leader>gy <Action>(GotoTypeDeclaration)
+nmap <leader>gi <Action>(GotoImplementation)
+nmap <leader>gu <Action>(ShowUsages)
+nmap <leader>gt <Action>(GotoTest)
+nmap <leader>gb <Action>(Back)
+nmap <leader>gf <Action>(Forward)
+
+" ── Git ───────────────────────────────────────────────────────────────────────
+map <leader>Gc <Action>(CheckinProject)
+map <leader>Gs <Action>(ActivateVersionControlToolWindow)
+map <leader>Gb <Action>(Git.Branches)
+map <leader>Gp <Action>(Vcs.Push)
+map <leader>Gl <Action>(Git.Pull)
+
+" ── Refactoring ───────────────────────────────────────────────────────────────
+map <leader>rn <Action>(RenameElement)
+map <leader>rm <Action>(ExtractMethod)
+map <leader>rv <Action>(IntroduceVariable)
+map <leader>rf <Action>(IntroduceField)
+map <leader>rs <Action>(ChangeSignature)
+map <leader>rr <Action>(Refactorings.QuickListPopupAction)
+
+" ── Diagnostics ───────────────────────────────────────────────────────────────
+map <leader>xn <Action>(ReSharperGotoNextErrorInSolution)
+map <leader>xp <Action>(ReSharperGotoPrevErrorInSolution)
+map <leader>xx <Action>(ShowErrorDescription)
+
+" ── Folding ───────────────────────────────────────────────────────────────────
+map <leader>zc <Action>(CollapseAllRegions)
+map <leader>zo <Action>(ExpandAllRegions)
+
+" ── Easymotion ────────────────────────────────────────────────────────────────
+map <leader>j <Plug>(easymotion-s)
+
+" ── Commentary ────────────────────────────────────────────────────────────────
+map <leader>c <Action>(CommentByLineComment)
