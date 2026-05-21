@@ -29,31 +29,6 @@
         return vim.fs.root(bufnr, { ".git", "flake.nix", "package.json", "composer.json" }) or vim.fn.getcwd()
       end
 
-      _G.KanePrettierArgs = function(ctx)
-        local filename = ctx and ctx.filename or vim.api.nvim_buf_get_name(0)
-        local start = filename ~= "" and vim.fs.dirname(filename) or vim.fn.getcwd()
-        local config = vim.fs.find({
-          ".prettierrc",
-          ".prettierrc.json",
-          ".prettierrc.json5",
-          ".prettierrc.yaml",
-          ".prettierrc.yml",
-          ".prettierrc.toml",
-          ".prettierrc.js",
-          ".prettierrc.cjs",
-          ".prettierrc.mjs",
-          "prettier.config.js",
-          "prettier.config.cjs",
-          "prettier.config.mjs",
-        }, { path = start, upward = true })[1]
-
-        if config then
-          return {}
-        end
-
-        return { "--arrow-parens", "avoid", "--print-width", "100", "--trailing-comma", "none" }
-      end
-
       _G.KaneToggleInlayHints = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
