@@ -11,6 +11,16 @@
       efiSupport = true;
       device = "nodev";
       useOSProber = true;
+
+      extraEntries = ''
+        menuentry "Windows 11" {
+          insmod part_gpt
+          insmod fat
+          insmod chain
+          search --no-floppy --set=root --fs-uuid 0416-498A
+          chainloader /EFI/Microsoft/Boot/bootmgfw.efi
+        }
+      '';
     };
 
     efi = {
@@ -33,6 +43,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    os-prober
     subversion
     teamviewer
   ];
@@ -59,7 +70,7 @@
   services.openvpn = {
     servers = {
       work = {
-        config = "/mnt/shared/.secrets/OpenVPN/config/work.ovpn";
+        config = "config /mnt/shared/.secrets/OVPN/work.ovpn";
         autoStart = false;
       };
     };
