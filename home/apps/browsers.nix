@@ -5,8 +5,7 @@
     package = pkgs.brave;
     commandLineArgs = [
       "--ozone-platform-hint=auto"
-      "--enable-features=TouchpadOverscrollHistoryNavigation,WebContentsForceDark"
-      "--force-dark-mode"
+      "--enable-features=TouchpadOverscrollHistoryNavigation"
     ];
     extensions = [
       { id = "cjpalhdlnbpafiamejdnhcphjbkeiagm"; } # uBlock Origin
