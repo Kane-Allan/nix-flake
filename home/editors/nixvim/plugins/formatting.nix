@@ -38,7 +38,7 @@ in
         prettier.prepend_args.__raw = "function(self, ctx) return _G.KanePrettierArgs(ctx) end";
       };
       format_on_save = {
-        timeout_ms = 1500;
+        timeout_ms = 5000;
         lsp_format = "fallback";
       };
     };

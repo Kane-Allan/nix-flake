@@ -26,6 +26,14 @@
     trouble.enable = true;
     web-devicons.enable = true;
 
+    notify = {
+      enable = true;
+      settings = {
+        timeout = 8000;
+        render = "wrapped-compact";
+      };
+    };
+
     which-key = {
       enable = true;
       settings = {
@@ -78,6 +86,10 @@
           "vim.lsp.util.convert_input_to_markdown_lines" = true;
           "vim.lsp.util.stylize_markdown" = true;
           "cmp.entry.get_documentation" = true;
+        };
+        notify = {
+          enabled = true;
+          view = "notify";
         };
         presets = {
           bottom_search = true;

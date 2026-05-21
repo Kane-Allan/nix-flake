@@ -224,12 +224,15 @@
       intelephense
       lua-language-server
       nixfmt
+      nodejs
       phpactor
       phpPackages.php-cs-fixer
+      prettier
       prettierd
       ripgrep
       stylua
       tailwindcss-language-server
+      typescript
       typescript-language-server
       vscode-langservers-extracted
     ];

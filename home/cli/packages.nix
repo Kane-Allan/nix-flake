@@ -8,5 +8,8 @@
     p7zip
     xh
     yq
+    unzip
+    nodejs
+    pnpm
   ];
 }

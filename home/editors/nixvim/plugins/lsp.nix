@@ -4,7 +4,10 @@
     enable = true;
     inlayHints = true;
     servers = {
-      ts_ls.enable = true;
+      ts_ls = {
+        enable = true;
+        package = pkgs.typescript-language-server;
+      };
       eslint.enable = true;
       tailwindcss.enable = true;
       html.enable = true;

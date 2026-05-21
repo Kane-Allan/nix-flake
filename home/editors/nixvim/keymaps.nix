@@ -238,6 +238,12 @@ in
     }
     {
       mode = "n";
+      key = "<leader>snn";
+      action = "<cmd>Notifications<cr>";
+      options.desc = "Notification history";
+    }
+    {
+      mode = "n";
       key = "<leader>snl";
       action = "<cmd>Noice last<cr>";
       options.desc = "Noice last message";
@@ -373,7 +379,7 @@ in
       key = "<leader>cf";
       action.__raw = ''
         function()
-          require("conform").format({ async = true, lsp_format = "fallback" })
+          require("conform").format({ async = true, lsp_format = "fallback", timeout_ms = 5000 })
         end
       '';
       options.desc = "Format";
