@@ -12,6 +12,7 @@
       cursor-style = "bar";
       cursor-style-blink = false;
       copy-on-select = "clipboard";
+      env = [ "TERM_FEATURES=No" ];
       term = "xterm-256color";
       keybind = [ ''shift+enter=text:\x1b[13;2u'' ];
     };

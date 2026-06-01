@@ -21,9 +21,9 @@
         ms-azuretools.vscode-containers
         ms-vscode.hexeditor
         ms-vscode-remote.remote-containers
-
         ms-azuretools.vscode-azureappservice
         ms-azuretools.vscode-azureresourcegroups
+        ms-azuretools.vscode-azurestorage
 
         # vim
         vscodevim.vim

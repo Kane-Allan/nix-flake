@@ -12,5 +12,6 @@
     nodejs
     pnpm
     usbutils
+    lsof
   ];
 }

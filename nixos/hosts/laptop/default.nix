@@ -56,6 +56,10 @@ in
     efi.canTouchEfiVariables = true;
   };
 
+  boot.extraModprobeConfig = ''
+    options mt7925e disable_aspm=1
+  '';
+
   environment.systemPackages = with pkgs; [
     bolt-launcher
     runeliteDesktop

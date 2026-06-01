@@ -1,4 +1,17 @@
 {
+  programs.nixvim.extraConfigLua = ''
+    vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+      callback = function()
+        vim.schedule(function()
+          local ok, lualine = pcall(require, "lualine")
+          if ok then
+            lualine.refresh({ place = { "statusline" } })
+          end
+        end)
+      end,
+    })
+  '';
+
   programs.nixvim.plugins = {
     colorizer = {
       enable = true;
@@ -154,13 +167,46 @@
 
     lualine = {
       enable = true;
-      settings.options = {
-        globalstatus = true;
-        component_separators = "";
-        section_separators = {
-          left = "";
-          right = "";
+      settings = {
+        options = {
+          globalstatus = true;
+          component_separators = "";
+          section_separators = {
+            left = "";
+            right = "";
+          };
         };
+        sections.lualine_x = [
+          {
+            __unkeyed-1.__raw = ''
+              function()
+                local recording_register = vim.fn.reg_recording()
+                if recording_register ~= "" then
+                  return "Recording @" .. recording_register
+                end
+
+                local executing_register = vim.fn.reg_executing()
+                if executing_register ~= "" then
+                  return "Executing @" .. executing_register
+                end
+
+                return ""
+              end
+            '';
+            cond.__raw = ''
+              function()
+                return vim.fn.reg_recording() ~= "" or vim.fn.reg_executing() ~= ""
+              end
+            '';
+            color = {
+              fg = "#ff9e64";
+              gui = "bold";
+            };
+          }
+          "encoding"
+          "fileformat"
+          "filetype"
+        ];
       };
     };
   };

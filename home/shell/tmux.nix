@@ -31,10 +31,13 @@
       bind C-r rotate-window
 
       set -g extended-keys on
+      set -g focus-events on
       set -g renumber-windows on
       set -g allow-passthrough on
+      set -g set-clipboard on
       set -ga update-environment TERM
       set -ga update-environment TERM_PROGRAM
+      set -ga update-environment TERM_FEATURES
       set -as terminal-features ',*:RGB'
       set -as terminal-overrides ',xterm-256color:RGB'
 

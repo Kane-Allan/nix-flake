@@ -13,13 +13,22 @@ let
     includeEmulator = true;
     includeSystemImages = true;
     systemImageTypes = [
+      "android-tv"
       "google_apis"
       "google_apis_playstore"
     ];
-    abiVersions = [ "x86_64" ];
+    abiVersions = [
+      "x86"
+      "x86_64"
+    ];
   };
   androidHome = "${androidSdk.androidsdk}/libexec/android-sdk";
-  androidStudio = (pkgs.android-studio.override { tiling_wm = true; }).withSdk androidSdk.androidsdk;
+  androidStudio =
+    (pkgs.android-studio.override {
+      tiling_wm = true;
+      forceWayland = true;
+    }).withSdk
+      androidSdk.androidsdk;
   androidStudioProperties = pkgs.writeText "android-studio.properties" ''
     ide.no.platform.update=true
   '';
