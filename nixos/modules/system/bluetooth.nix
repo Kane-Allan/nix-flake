@@ -6,7 +6,7 @@
       General = {
         Enable = "Source,Sink,Media,Socket";
         AutoEnable = true;
-        ControllerMode = "bredr";
+        ControllerMode = "dual";
       };
     };
   };

@@ -11,5 +11,6 @@
     unzip
     nodejs
     pnpm
+    usbutils
   ];
 }

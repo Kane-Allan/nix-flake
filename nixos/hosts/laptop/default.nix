@@ -66,5 +66,13 @@ in
     enable32Bit = true;
   };
 
+  programs.chromium = {
+    enable = true;
+
+    defaultSearchProviderEnabled = true;
+    defaultSearchProviderSearchURL = "https://searxng.enak-nalla.dev/search?q={searchTerms}";
+    defaultSearchProviderSuggestURL = "https://searxng.enak-nalla.dev/autocompleter?q={searchTerms}";
+  };
+
   environment.etc."systemd/system-sleep/amd-pstate-resume".source = amdPstateResume;
 }

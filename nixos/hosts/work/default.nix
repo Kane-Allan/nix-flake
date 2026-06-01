@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, vars, ... }:
 {
   imports = [
     ./hardware-configuration.nix
@@ -11,16 +11,6 @@
       efiSupport = true;
       device = "nodev";
       useOSProber = true;
-
-      extraEntries = ''
-        menuentry "Windows 11" {
-          insmod part_gpt
-          insmod fat
-          insmod chain
-          search --no-floppy --set=root --fs-uuid 0416-498A
-          chainloader /EFI/Microsoft/Boot/bootmgfw.efi
-        }
-      '';
     };
 
     efi = {
@@ -46,9 +36,16 @@
     os-prober
     subversion
     teamviewer
+    picoscope
+    dbeaver-bin
   ];
 
   nixpkgs.config.segger-jlink.acceptLicense = true;
+
+  services.udev.packages = [ pkgs.picoscope.rules ];
+
+  users.groups.pico = { };
+  users.users.${vars.user}.extraGroups = [ "pico" ];
 
   swapDevices = [
     {
@@ -72,6 +69,41 @@
       work = {
         config = "config /mnt/shared/.secrets/OVPN/work.ovpn";
         autoStart = false;
+        up = ''
+          dns_route_file=/run/openvpn-work-preserved-dns-routes
+          vpn_dns="''${ifconfig_local%.*}.1"
+
+          if [ -n "''${route_net_gateway:-}" ]; then
+            : > "$dns_route_file"
+
+            ${pkgs.systemd}/bin/resolvectl dns \
+              | ${pkgs.gnugrep}/bin/grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' \
+              | while read -r dns_server; do
+                if ${pkgs.iproute2}/bin/ip route replace "$dns_server/32" via "$route_net_gateway"; then
+                  printf '%s\n' "$dns_server" >> "$dns_route_file"
+                fi
+              done
+          fi
+
+          if [ -n "$vpn_dns" ]; then
+            ${pkgs.systemd}/bin/resolvectl dns "$dev" "$vpn_dns"
+            ${pkgs.systemd}/bin/resolvectl default-route "$dev" false
+            ${pkgs.systemd}/bin/resolvectl domain "$dev" "~internal"
+          fi
+        '';
+        down = ''
+          dns_route_file=/run/openvpn-work-preserved-dns-routes
+
+          if [ -r "$dns_route_file" ]; then
+            while read -r dns_server; do
+              ${pkgs.iproute2}/bin/ip route del "$dns_server/32" 2>/dev/null || true
+            done < "$dns_route_file"
+
+            rm -f "$dns_route_file"
+          fi
+
+          ${pkgs.systemd}/bin/resolvectl revert "$dev" || true
+        '';
       };
     };
   };

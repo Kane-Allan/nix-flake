@@ -70,7 +70,16 @@
     let
       monitor = "eDP-1";
       monitorMode = if vars.hyprland.resolution == "" then "preferred" else vars.hyprland.resolution;
-      monitor_config = "${monitor},${monitorMode},0x0,${vars.hyprland.scale}";
+      monitor_config = toLua {
+        output = monitor;
+        mode = monitorMode;
+        position = "0x0";
+        scale = vars.hyprland.scale;
+      };
+      monitor_disable = toLua {
+        output = monitor;
+        disabled = true;
+      };
       chatgptPanel = pkgs.callPackage ../../../pkgs/chatgpt-panel { };
       lockCommand = "${pkgs.procps}/bin/pgrep -x hyprlock >/dev/null || ${pkgs.hyprlock}/bin/hyprlock --grace 5";
       keyboardBacklight = pkgs.writeShellScript "keyboard-backlight" ''
@@ -144,16 +153,16 @@
       '';
 
       clamshell = pkgs.writeShellScript "hypr-clamshell" ''
-        if [[ $(${pkgs.hyprland}/bin/hyprctl monitors 2>/dev/null | ${pkgs.ripgrep}/bin/rg "\sDP-[0-9]+") ]]; then
-          if [[ $1 == "open" ]]; then
-            ${pkgs.hyprland}/bin/hyprctl keyword monitor ${monitor_config}
-            sleep 0.5
-            ${pkgs.hyprland}/bin/hyprctl dispatch dpms on ${monitor}
+        action="''${1:-}"
+
+        if [[ "$action" == "open" ]]; then
+          ${pkgs.hyprland}/bin/hyprctl eval ${lib.escapeShellArg "hl.monitor(${monitor_config})"}
+          sleep 0.5
+          ${pkgs.hyprland}/bin/hyprctl dispatch dpms on ${monitor}
+        elif [[ "$action" == "close" ]]; then
+          if [[ $(${pkgs.hyprland}/bin/hyprctl monitors 2>/dev/null | ${pkgs.ripgrep}/bin/rg "^Monitor " | ${pkgs.ripgrep}/bin/rg -v "^Monitor ${monitor} ") ]]; then
+            ${pkgs.hyprland}/bin/hyprctl eval ${lib.escapeShellArg "hl.monitor(${monitor_disable})"}
           else
-            ${pkgs.hyprland}/bin/hyprctl keyword monitor "${monitor},disable"
-          fi
-        else
-          if [[ $1 != "open" ]]; then
             ${lockCommand}
           fi
         fi
@@ -242,6 +251,12 @@
               mode = monitorMode;
               position = "0x0";
               scale = vars.hyprland.scale;
+            }
+            {
+              output = "desc:AOC U34E2M 1R2R6HA001557";
+              mode = "3440x1440@99.98";
+              position = "auto";
+              scale = 1;
             }
             {
               output = "";
@@ -749,8 +764,8 @@
               repeating = true;
               locked = true;
             })
-            (mkExecBindWith "switch:on:Lid Switch" clamshell { locked = true; })
-            (mkExecBindWith "switch:off:Lid Switch" clamshell { locked = true; })
+            (mkExecBindWith "switch:on:Lid Switch" "${clamshell} close" { locked = true; })
+            (mkExecBindWith "switch:off:Lid Switch" "${clamshell} open" { locked = true; })
           ];
         };
       };
