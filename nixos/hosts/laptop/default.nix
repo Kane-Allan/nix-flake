@@ -41,6 +41,10 @@ let
     NoDisplay=true
     EOF
   '';
+
+  unbindFtdiSio = pkgs.writeShellScript "unbind-ftdi-sio" ''
+    printf '%s' "$1" > /sys/bus/usb/drivers/ftdi_sio/unbind
+  '';
 in
 {
   imports = [
@@ -58,6 +62,15 @@ in
 
   boot.extraModprobeConfig = ''
     options mt7925e disable_aspm=1
+  '';
+
+  services.udev.extraRules = ''
+    # unload ftdi_sio driver for hyper racks
+    ACTION=="add", SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", RUN+="${unbindFtdiSio} %k"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="dialout", MODE="0666", TAG+="uaccess"
+
+    # allow non-root users to access tty
+    KERNEL=="ttyACM[0-9]*", GROUP="dialout", MODE="0660"
   '';
 
   environment.systemPackages = with pkgs; [

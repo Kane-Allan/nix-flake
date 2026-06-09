@@ -10,6 +10,11 @@
         end)
       end,
     })
+
+    local ok, fzf_lua = pcall(require, "fzf-lua")
+    if ok then
+      fzf_lua.register_ui_select()
+    end
   '';
 
   programs.nixvim.plugins = {
@@ -28,7 +33,17 @@
     };
 
     comment.enable = true;
-    fzf-lua.enable = true;
+    fzf-lua = {
+      enable = true;
+      settings = {
+        ui-select = {
+          winopts = {
+            height = 0.33;
+            width = 0.50;
+          };
+        };
+      };
+    };
     gitsigns.enable = true;
     harpoon.enable = true;
     nvim-autopairs.enable = true;

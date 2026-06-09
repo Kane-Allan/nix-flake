@@ -571,9 +571,12 @@ in
       options.desc = "Rename";
     }
     {
-      mode = "n";
+      mode = [
+        "n"
+        "v"
+      ];
       key = "<leader>ca";
-      action.__raw = "vim.lsp.buf.code_action";
+      action = "<cmd>FzfLua lsp_code_actions<cr>";
       options.desc = "Code action";
     }
     {

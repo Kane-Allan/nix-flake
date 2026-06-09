@@ -1,6 +1,7 @@
 { pkgs, vars, ... }:
 let
   jdk = pkgs.jdk21;
+  jdk17 = pkgs.jdk17;
   androidSdk = pkgs.androidenv.composeAndroidPackages {
     platformVersions = [
       "36"
@@ -222,13 +223,18 @@ in
       ANDROID_SDK_ROOT = androidHome;
       ANDROID_EMULATOR_USE_SYSTEM_LIBS = "1";
       STUDIO_PROPERTIES = "${androidStudioProperties}";
-      GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${androidHome}/build-tools/36.0.0/aapt2";
+      GRADLE_OPTS = ''
+        -Dorg.gradle.project.android.aapt2FromMavenOverride=${androidHome}/build-tools/36.0.0/aapt2
+        -Dorg.gradle.java.installations.paths=${jdk17.home},${jdk.home}
+        -Dorg.gradle.java.installations.auto-download=false
+      '';
     };
 
     systemPackages = [
       androidStudio
       androidSdk.androidsdk
       jdk
+      jdk17
       bumble
       androidAvdEnsure
       androidEmulatorSelect

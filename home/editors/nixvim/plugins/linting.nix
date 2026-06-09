@@ -24,5 +24,14 @@
       ];
       callback.__raw = "function() _G.KaneLint() end";
     };
+    linters.eslint_d.args = [
+      "--flag"
+      "unstable_native_nodejs_ts_config"
+      "--format"
+      "json"
+      "--stdin"
+      "--stdin-filename"
+      { __raw = "function() return vim.api.nvim_buf_get_name(0) end"; }
+    ];
   };
 }

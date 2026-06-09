@@ -8,7 +8,14 @@
         enable = true;
         package = pkgs.typescript-language-server;
       };
-      eslint.enable = true;
+      eslint = {
+        enable = true;
+        settings = {
+          packageManager = "pnpm";
+          options.flags = [ "unstable_native_nodejs_ts_config" ];
+          workingDirectory.mode = "auto";
+        };
+      };
       tailwindcss.enable = true;
       html.enable = true;
       cssls.enable = true;
