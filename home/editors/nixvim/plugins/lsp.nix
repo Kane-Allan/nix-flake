@@ -1,17 +1,48 @@
 { pkgs, vars, ... }:
+let
+  typeScriptInlayHints = {
+    enumMemberValues.enabled = true;
+    functionLikeReturnTypes.enabled = true;
+    parameterNames.enabled = "literals";
+    parameterTypes.enabled = true;
+    propertyDeclarationTypes.enabled = true;
+    variableTypes = {
+      enabled = true;
+      suppressWhenTypeMatchesName = true;
+    };
+  };
+
+  typeScriptSettings = {
+    updateImportsOnFileMove.enabled = "always";
+    suggest.completeFunctionCalls = true;
+    inlayHints = typeScriptInlayHints;
+  };
+in
 {
   programs.nixvim.plugins.lsp = {
     enable = true;
     inlayHints = true;
     servers = {
-      ts_ls = {
+      vtsls = {
         enable = true;
-        package = pkgs.typescript-language-server;
+        package = pkgs.vtsls;
+        settings = {
+          complete_function_calls = true;
+          javascript = typeScriptSettings;
+          typescript = typeScriptSettings;
+          vtsls = {
+            autoUseWorkspaceTsdk = true;
+            enableMoveToFileCodeAction = true;
+            experimental = {
+              maxInlayHintLength = 30;
+              completion.enableServerSideFuzzyMatch = true;
+            };
+          };
+        };
       };
       eslint = {
         enable = true;
         settings = {
-          packageManager = "pnpm";
           options.flags = [ "unstable_native_nodejs_ts_config" ];
           workingDirectory.mode = "auto";
         };

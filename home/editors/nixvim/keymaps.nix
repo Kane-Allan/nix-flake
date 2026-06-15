@@ -263,13 +263,7 @@ in
     {
       mode = "n";
       key = "<leader>gg";
-      action.__raw = ''
-        function()
-          vim.cmd("tabnew")
-          vim.cmd("terminal lazygit")
-          vim.cmd("startinsert")
-        end
-      '';
+      action.__raw = "_G.KaneLazyGit";
       options.desc = "LazyGit";
     }
     {
@@ -373,6 +367,12 @@ in
       key = "<leader>xt";
       action = "<cmd>TodoTrouble<cr>";
       options.desc = "Todos";
+    }
+    {
+      mode = "n";
+      key = "<leader>bd";
+      action.__raw = "_G.KaneDeleteBuffer";
+      options.desc = "Delete buffer";
     }
     {
       mode = "n";

@@ -1,52 +1,21 @@
 {
-  config,
+  inputs,
   pkgs,
   vars,
   lib,
   ...
 }:
+let
+  noctalia = lib.getExe inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  noctaliaMsg = "${noctalia} msg";
+in
 {
-  programs.regreet.enable = true;
-
   security.pam.services.hyprlock = { };
 
-  services.upower = {
-    enable = true;
-    usePercentageForPolicy = true;
-    percentageLow = 20;
-    percentageCritical = 10;
-    percentageAction = 5;
+  environment.sessionVariables = {
+    XDG_CURRENT_DESKTOP = "Hyprland";
+    XDG_SESSION_DESKTOP = "Hyprland";
   };
-
-  services.udev.packages = [
-    pkgs.brightnessctl
-    pkgs.swayosd
-  ];
-
-  environment = {
-    sessionVariables = {
-      NIXOS_OZONE_WL = "1";
-      ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-      QT_QPA_PLATFORM = "wayland;xcb";
-      QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-      GDK_BACKEND = "wayland,x11";
-      SDL_VIDEODRIVER = "wayland";
-      CLUTTER_BACKEND = "wayland";
-      XDG_CURRENT_DESKTOP = "Hyprland";
-      XDG_SESSION_TYPE = "wayland";
-      XDG_SESSION_DESKTOP = "Hyprland";
-      XCURSOR_SIZE = "24";
-      XCURSOR_THEME = "catppuccin-frappe-blue-cursors";
-      GDK_SCALE = vars.hyprland.scale;
-    };
-
-    systemPackages = with pkgs; [
-      wl-clipboard
-      wlr-randr
-    ];
-  };
-
-  hardware.graphics.enable = true;
 
   programs.hyprland = {
     enable = true;
@@ -55,12 +24,8 @@
   };
 
   xdg.portal = {
-    enable = true;
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk
-      xdg-desktop-portal-hyprland
-    ];
-    config.common.default = [
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+    config.common.default = lib.mkForce [
       "hyprland"
       "gtk"
     ];
@@ -80,7 +45,6 @@
         output = monitor;
         disabled = true;
       };
-      chatgptPanel = pkgs.callPackage ../../../pkgs/chatgpt-panel { };
       lockCommand = "${pkgs.procps}/bin/pgrep -x hyprlock >/dev/null || ${pkgs.hyprlock}/bin/hyprlock --grace 5";
       keyboardBacklight = pkgs.writeShellScript "keyboard-backlight" ''
         set -eu
@@ -121,9 +85,6 @@
 
         exec ${pkgs.brightnessctl}/bin/brightnessctl --device="$device" set "$next"
       '';
-      colors = config.lib.stylix.colors;
-      rgb = color: "rgb(${color})";
-      rgba = color: alpha: "rgba(${color}${alpha})";
       toLua = lib.generators.toLua { };
       lua = lib.generators.mkLuaInline;
       mkBind = keys: dispatcher: {
@@ -145,7 +106,7 @@
         mkBindWith keys "hl.dsp.exec_cmd(${toLua command})" opts;
 
       tmuxTerminal = pkgs.writeShellScript "ghostty-tmux" ''
-        exec ${pkgs.ghostty}/bin/ghostty -e ${pkgs.zsh}/bin/zsh -l -c '${pkgs.tmux}/bin/tmux attach || ${pkgs.tmux}/bin/tmux'
+        exec ${pkgs.ghostty}/bin/ghostty --title=tmux --class=ghostty -e ${pkgs.zsh}/bin/zsh -l -c '${pkgs.tmux}/bin/tmux attach || ${pkgs.tmux}/bin/tmux'
       '';
 
       yaziTerminal = pkgs.writeShellScript "ghostty-yazi" ''
@@ -169,39 +130,6 @@
       '';
     in
     {
-      imports = [
-        ./fuzzel.nix
-        ./swaync.nix
-        ./waybar.nix
-      ];
-
-      home.packages = with pkgs; [
-        brightnessctl
-        chatgptPanel
-        networkmanager_dmenu
-      ];
-
-      systemd.user.services.chatgpt-panel = {
-        Unit = {
-          Description = "ChatGPT layer-shell panel";
-        };
-
-        Service = {
-          ExecStart = "${chatgptPanel}/bin/chatgpt-panel";
-          Restart = "on-failure";
-          RestartSec = "2s";
-        };
-      };
-
-      services = {
-        poweralertd = {
-          enable = true;
-          extraArgs = [ "-S" ];
-        };
-
-        swayosd.enable = true;
-      };
-
       services.hypridle = {
         enable = true;
         settings = {
@@ -271,9 +199,9 @@
               "hyprland.start"
               (lua ''
                 function()
-                  hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
-                  hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
-                  hl.exec_cmd("${pkgs.waybar}/bin/waybar")
+                  hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE")
+                  hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE")
+                  -- hl.exec_cmd("${pkgs.systemd}/bin/systemctl --user restart noctalia.service")
                 end
               '')
             ];
@@ -300,8 +228,6 @@
               border_size = 2;
               layout = "dwindle";
               resize_on_border = true;
-              "col.active_border" = rgb colors.base0D;
-              "col.inactive_border" = rgb colors.base03;
             };
 
             decoration = {
@@ -318,7 +244,6 @@
                 enabled = true;
                 range = 12;
                 render_power = 2;
-                color = rgba colors.base00 "99";
               };
 
               active_opacity = 1.0;
@@ -334,24 +259,11 @@
               preserve_split = true;
             };
 
-            group = {
-              "col.border_inactive" = rgb colors.base03;
-              "col.border_active" = rgb colors.base0D;
-              "col.border_locked_active" = rgb colors.base0C;
-
-              groupbar = {
-                text_color = rgb colors.base05;
-                "col.active" = rgb colors.base0D;
-                "col.inactive" = rgb colors.base03;
-              };
-            };
-
             misc = {
               force_default_wallpaper = 0;
               disable_hyprland_logo = true;
               mouse_move_enables_dpms = true;
               key_press_enables_dpms = true;
-              background_color = rgb colors.base00;
             };
 
             xwayland.force_zero_scaling = true;
@@ -625,36 +537,24 @@
               };
               no_initial_focus = true;
             }
+          ];
+
+          layer_rule = [
             {
-              match = {
-                class = "net-runelite-client-RuneLite";
-                title = "Picture in Picture";
-                xwayland = true;
-              };
-
-              float = true;
-              pin = true;
-              size = [
-                480
-                270
-              ];
-              move = [
-                "monitor_w - window_w - 20"
-                "monitor_h - window_h - 20"
-              ];
-
-              no_initial_focus = true;
-              no_focus = true;
-              no_follow_mouse = true;
-              focus_on_activate = false;
-              decorate = false;
+              name = "noctalia";
+              match.namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$";
+              ignore_alpha = 0.5;
+              blur = true;
+              blur_popups = true;
             }
           ];
 
           bind = [
             (mkExecBind "SUPER + Return" tmuxTerminal)
             (mkExecBind "SUPER + SHIFT + Return" "${pkgs.brave}/bin/brave")
-            (mkExecBind "SUPER + Space" "${pkgs.fuzzel}/bin/fuzzel")
+            (mkExecBind "SUPER + Space" "${noctaliaMsg} panel-toggle launcher")
+            (mkExecBind "SUPER + C" "${noctaliaMsg} panel-toggle control-center")
+            (mkExecBind "SUPER + comma" "${noctaliaMsg} settings-toggle")
             (mkExecBind "SUPER + E" yaziTerminal)
 
             (mkBind "SUPER + Q" "hl.dsp.window.close()")
@@ -724,36 +624,36 @@
             (mkBind "SUPER + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
             (mkBind "SUPER + mouse_up" ''hl.dsp.focus({ workspace = "e-1" })'')
 
-            (mkExecBindWith "XF86AudioRaiseVolume" "${pkgs.swayosd}/bin/swayosd-client --output-volume +5" {
+            (mkExecBindWith "XF86AudioRaiseVolume" "${noctaliaMsg} volume-up 5" {
               repeating = true;
               locked = true;
             })
-            (mkExecBindWith "XF86AudioLowerVolume" "${pkgs.swayosd}/bin/swayosd-client --output-volume -5" {
+            (mkExecBindWith "XF86AudioLowerVolume" "${noctaliaMsg} volume-down 5" {
               repeating = true;
               locked = true;
             })
-            (mkExecBindWith "XF86MonBrightnessUp" "${pkgs.swayosd}/bin/swayosd-client --brightness +5" {
+            (mkExecBindWith "XF86MonBrightnessUp" "${noctaliaMsg} brightness-up 5" {
               repeating = true;
               locked = true;
             })
-            (mkExecBindWith "XF86MonBrightnessDown" "${pkgs.swayosd}/bin/swayosd-client --brightness -5" {
+            (mkExecBindWith "XF86MonBrightnessDown" "${noctaliaMsg} brightness-down 5" {
               repeating = true;
               locked = true;
             })
 
-            (mkExecBindWith "XF86AudioMute" "${pkgs.swayosd}/bin/swayosd-client --output-volume mute-toggle" {
+            (mkExecBindWith "XF86AudioMute" "${noctaliaMsg} volume-mute" {
               locked = true;
             })
-            (mkExecBindWith "XF86AudioMicMute" "${pkgs.swayosd}/bin/swayosd-client --input-volume mute-toggle" {
+            (mkExecBindWith "XF86AudioMicMute" "${noctaliaMsg} mic-mute" {
               locked = true;
             })
-            (mkExecBindWith "XF86AudioPlay" "${pkgs.swayosd}/bin/swayosd-client --playerctl play-pause" {
+            (mkExecBindWith "XF86AudioPlay" "${noctaliaMsg} media toggle" {
               locked = true;
             })
-            (mkExecBindWith "XF86AudioNext" "${pkgs.swayosd}/bin/swayosd-client --playerctl next" {
+            (mkExecBindWith "XF86AudioNext" "${noctaliaMsg} media next" {
               locked = true;
             })
-            (mkExecBindWith "XF86AudioPrev" "${pkgs.swayosd}/bin/swayosd-client --playerctl prev" {
+            (mkExecBindWith "XF86AudioPrev" "${noctaliaMsg} media previous" {
               locked = true;
             })
             (mkExecBindWith "XF86KbdBrightnessUp" "${keyboardBacklight} up" {

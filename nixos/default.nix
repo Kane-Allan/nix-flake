@@ -18,7 +18,7 @@ let
     ./modules/user.nix
     ./modules/theme.nix
     ./modules/docker.nix
-    ./desktops/hyprland
+    ./desktops/wayland
   ];
 in
 {
@@ -31,6 +31,9 @@ in
           scale = "2";
           resolution = "2944x1840@90";
         };
+
+        # Bongo Cat validates this as a literal /dev/input/eventN and rejects stable by-path symlinks.
+        noctalia.bongocat.inputDevice = "/dev/input/event0";
       };
     in
     inputs.nixpkgs.lib.nixosSystem {

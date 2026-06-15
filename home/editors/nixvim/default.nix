@@ -35,6 +35,48 @@
         vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
       end
 
+      _G.KaneDeleteBuffer = function()
+        local buf = vim.api.nvim_get_current_buf()
+
+        if vim.bo[buf].modified then
+          vim.notify("Buffer has unsaved changes", vim.log.levels.WARN)
+          return
+        end
+
+        local listed = vim.fn.getbufinfo({ buflisted = 1 })
+        if #listed > 1 then
+          vim.cmd("bprevious")
+        end
+
+        pcall(vim.api.nvim_buf_delete, buf, {})
+      end
+
+      _G.KaneLazyGit = function()
+        local width = math.floor(vim.o.columns * 0.9)
+        local height = math.floor(vim.o.lines * 0.9)
+        local row = math.floor((vim.o.lines - height) / 2)
+        local col = math.floor((vim.o.columns - width) / 2)
+        local buf = vim.api.nvim_create_buf(false, true)
+        local win = vim.api.nvim_open_win(buf, true, {
+          relative = "editor",
+          style = "minimal",
+          border = "rounded",
+          width = width,
+          height = height,
+          row = row,
+          col = col,
+        })
+
+        vim.fn.termopen("lazygit", {
+          on_exit = function()
+            if vim.api.nvim_win_is_valid(win) then
+              vim.api.nvim_win_close(win, true)
+            end
+          end,
+        })
+        vim.cmd("startinsert")
+      end
+
       _G.KaneLint = function()
         local js_like = {
           javascript = true,
@@ -174,7 +216,13 @@
     };
 
     diagnostic.settings = {
-      virtual_text = false;
+      underline = true;
+      update_in_insert = false;
+      virtual_text = {
+        spacing = 4;
+        source = "if_many";
+        prefix = "●";
+      };
       severity_sort = true;
       float = {
         border = "rounded";
@@ -211,7 +259,7 @@
       stylua
       tailwindcss-language-server
       typescript
-      typescript-language-server
+      vtsls
       vscode-langservers-extracted
     ];
   };

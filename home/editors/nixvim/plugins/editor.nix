@@ -15,6 +15,35 @@
     if ok then
       fzf_lua.register_ui_select()
     end
+
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = {
+        "PlenaryTestPopup",
+        "Trouble",
+        "checkhealth",
+        "gitsigns-blame",
+        "help",
+        "lspinfo",
+        "neo-tree",
+        "noice",
+        "notify",
+        "qf",
+        "trouble",
+      },
+      callback = function(event)
+        vim.bo[event.buf].buflisted = false
+        vim.schedule(function()
+          vim.keymap.set("n", "q", function()
+            vim.cmd("close")
+            pcall(vim.api.nvim_buf_delete, event.buf, { force = true })
+          end, {
+            buffer = event.buf,
+            silent = true,
+            desc = "Quit buffer",
+          })
+        end)
+      end,
+    })
   '';
 
   programs.nixvim.plugins = {
@@ -67,6 +96,10 @@
       settings = {
         delay = 250;
         spec = [
+          {
+            __unkeyed-1 = "<leader>b";
+            group = "Buffer";
+          }
           {
             __unkeyed-1 = "<leader>c";
             group = "Code";
@@ -175,6 +208,7 @@
         window.mappings = {
           l = "open";
           h = "close_node";
+          q = "close_window";
           "<space>" = "none";
         };
       };

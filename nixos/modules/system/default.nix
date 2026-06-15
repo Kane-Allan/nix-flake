@@ -4,7 +4,9 @@
     ./audio.nix
     ./locale.nix
     ./bluetooth.nix
+    ./hardware.nix
     ./networking.nix
+    ./power.nix
   ];
 
   boot = {
@@ -17,9 +19,7 @@
     loader.timeout = 5;
   };
 
-  services = {
-    udisks2.enable = true;
-  };
+  services.udisks2.enable = true;
 
   system.stateVersion = "25.11";
 }

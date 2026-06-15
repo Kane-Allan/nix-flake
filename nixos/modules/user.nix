@@ -13,6 +13,7 @@
       "dialout"
       "tty"
       "adbusers"
+      "input"
     ];
     shell = pkgs.zsh;
   };
