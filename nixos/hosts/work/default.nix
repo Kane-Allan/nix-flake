@@ -1,4 +1,18 @@
 { pkgs, vars, ... }:
+let
+  unbind-ftdi-sio = pkgs.writeShellScript "unbind-ftdi-sio" ''
+    #!/bin/sh
+    set -eu
+
+    if [ $# -ne 1 ]; then
+      exit 0
+    fi
+
+    if [ -w /sys/bus/usb/drivers/ftdi_sio/unbind ]; then
+      printf '%s' "$1" > /sys/bus/usb/drivers/ftdi_sio/unbind
+    fi
+  '';
+in
 {
   imports = [
     ./hardware-configuration.nix
@@ -38,6 +52,7 @@
     teamviewer
     picoscope
     dbeaver-bin
+    cloudflared
   ];
 
   nixpkgs.config.segger-jlink.acceptLicense = true;
@@ -56,12 +71,10 @@
 
   services.udev.extraRules = ''
     # unload ftdi_sio driver for hyper racks
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", ATTR{manufacturer}=="FTDI", ENV{ID_MODULE}="ftdi_sio"
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", DRIVER=="ftdi_sio", RUN+="/bin/sh -c 'echo -n $kernel > /sys/bus/usb/drivers/ftdi_sio/unbind'"
-    SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="dialout", MODE="0666"
+    ACTION=="add", SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", RUN+="${unbind-ftdi-sio} %k"
 
     # allow non-root users to access tty
-    KERNEL=="ttyACM[0-9]*", GROUP="dialout", MODE="0660"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="dialout", MODE="0660", TAG+="uaccess"
   '';
 
   services.openvpn = {
