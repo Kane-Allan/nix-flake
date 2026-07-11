@@ -16,6 +16,24 @@
     ];
   };
 
+  programs.firefox = {
+    enable = true;
+    configPath = ".mozilla/firefox";
+
+    profiles = {
+      Personal = {
+        id = 0;
+        name = "Personal";
+        isDefault = true;
+      };
+
+      Work = {
+        id = 1;
+        name = "Work";
+      };
+    };
+  };
+
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {

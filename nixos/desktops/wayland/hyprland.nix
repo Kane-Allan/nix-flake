@@ -209,8 +209,8 @@ in
               scale = vars.hyprland.scale;
             }
             {
-              output = "desc:AOC U34E2M 1R2R6HA001557";
-              mode = "3440x1440@99.98";
+              output = "desc:Huawei Technologies Co., Inc. ZQE-CAA 0xC080F622";
+              mode = "3440x1440@165.00";
               position = "auto";
               scale = 1;
             }
@@ -535,6 +535,14 @@ in
           ];
 
           window_rule = [
+            {
+              match.class = "^(firefox)$";
+              match.title = "Picture-in-Picture";
+              float = true;
+              pin = true;
+              # nofullscreenrequest = true;
+              # nomaximizerequest = true;
+            }
             {
               match.class = "^(pavucontrol)$";
               float = true;

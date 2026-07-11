@@ -56,6 +56,10 @@ in
     efi.canTouchEfiVariables = true;
   };
 
+  boot.kernelParams = [
+    "amdgpu.sg_display=0"
+  ];
+
   boot.extraModprobeConfig = ''
     options mt7925e disable_aspm=1
   '';
