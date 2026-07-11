@@ -48,14 +48,13 @@ in
 
   environment.systemPackages = with pkgs; [
     os-prober
-    subversion
-    teamviewer
     picoscope
-    dbeaver-bin
-    cloudflared
+    teamviewer
   ];
 
   nixpkgs.config.segger-jlink.acceptLicense = true;
+
+  services.teamviewer.enable = true;
 
   services.udev.packages = [ pkgs.picoscope.rules ];
 

@@ -10,8 +10,6 @@ let
   noctaliaMsg = "${noctalia} msg";
 in
 {
-  security.pam.services.hyprlock = { };
-
   environment.sessionVariables = {
     XDG_CURRENT_DESKTOP = "Hyprland";
     XDG_SESSION_DESKTOP = "Hyprland";
@@ -35,17 +33,18 @@ in
     let
       monitor = "eDP-1";
       monitorMode = if vars.hyprland.resolution == "" then "preferred" else vars.hyprland.resolution;
-      monitor_config = toLua {
+      monitorConfigLua = toLua {
         output = monitor;
         mode = monitorMode;
         position = "0x0";
         scale = vars.hyprland.scale;
+        disabled = false;
       };
-      monitor_disable = toLua {
+      monitorDisableLua = toLua {
         output = monitor;
         disabled = true;
       };
-      lockCommand = "${pkgs.procps}/bin/pgrep -x hyprlock >/dev/null || ${pkgs.hyprlock}/bin/hyprlock --grace 5";
+      lockCommand = "${noctaliaMsg} session lock";
       keyboardBacklight = pkgs.writeShellScript "keyboard-backlight" ''
         set -eu
 
@@ -115,14 +114,52 @@ in
 
       clamshell = pkgs.writeShellScript "hypr-clamshell" ''
         action="''${1:-}"
+        monitor=${lib.escapeShellArg monitor}
+        hyprctl=${pkgs.hyprland}/bin/hyprctl
+        jq=${pkgs.jq}/bin/jq
+        rg=${pkgs.ripgrep}/bin/rg
+
+        enable_internal() {
+          "$hyprctl" eval ${lib.escapeShellArg "hl.monitor(${monitorConfigLua})"} >/dev/null 2>&1 || true
+        }
+
+        internal_enabled() {
+          "$hyprctl" monitors all -j 2>/dev/null | "$jq" -e --arg monitor "$monitor" ${lib.escapeShellArg ".[] | select(.name == $monitor and (.disabled | not))"} >/dev/null
+        }
+
+        active_monitor_count() {
+          "$hyprctl" monitors -j 2>/dev/null | "$jq" length 2>/dev/null || printf 0
+        }
 
         if [[ "$action" == "open" ]]; then
-          ${pkgs.hyprland}/bin/hyprctl eval ${lib.escapeShellArg "hl.monitor(${monitor_config})"}
-          sleep 0.5
-          ${pkgs.hyprland}/bin/hyprctl dispatch dpms on ${monitor}
+          if [[ "$(active_monitor_count)" == "0" ]]; then
+            "$hyprctl" reload >/dev/null 2>&1 || true
+          fi
+
+          for _ in {1..8}; do
+            enable_internal
+
+            if internal_enabled; then
+              exit 0
+            fi
+
+            sleep 0.25
+          done
+
+          "$hyprctl" reload >/dev/null 2>&1 || true
+
+          for _ in {1..40}; do
+            enable_internal
+
+            if internal_enabled; then
+              exit 0
+            fi
+
+            sleep 0.25
+          done
         elif [[ "$action" == "close" ]]; then
-          if [[ $(${pkgs.hyprland}/bin/hyprctl monitors 2>/dev/null | ${pkgs.ripgrep}/bin/rg "^Monitor " | ${pkgs.ripgrep}/bin/rg -v "^Monitor ${monitor} ") ]]; then
-            ${pkgs.hyprland}/bin/hyprctl eval ${lib.escapeShellArg "hl.monitor(${monitor_disable})"}
+          if [[ $("$hyprctl" monitors 2>/dev/null | "$rg" "^Monitor " | "$rg" -v "^Monitor $monitor ") ]]; then
+            "$hyprctl" eval ${lib.escapeShellArg "hl.monitor(${monitorDisableLua})"}
           else
             ${lockCommand}
           fi
@@ -153,15 +190,6 @@ in
               on-resume = "hyprctl dispatch dpms on";
             }
           ];
-        };
-      };
-
-      programs.hyprlock = {
-        enable = true;
-        settings = {
-          general = {
-            hide_cursor = true;
-          };
         };
       };
 

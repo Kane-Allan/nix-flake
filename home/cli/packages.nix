@@ -13,5 +13,6 @@
     pnpm
     usbutils
     lsof
+    unrar
   ];
 }

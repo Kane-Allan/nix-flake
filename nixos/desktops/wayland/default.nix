@@ -1,7 +1,6 @@
 {
   pkgs,
   vars,
-  lib,
   ...
 }:
 {
@@ -12,7 +11,6 @@
 
   programs.regreet = {
     enable = true;
-    settings.background = lib.mkForce { };
   };
 
   environment = {

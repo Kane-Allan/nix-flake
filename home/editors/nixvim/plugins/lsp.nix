@@ -50,7 +50,14 @@ in
       tailwindcss.enable = true;
       html.enable = true;
       cssls.enable = true;
-      jsonls.enable = true;
+      jsonls = {
+        enable = true;
+        package = pkgs.vscode-json-languageserver;
+        cmd = [
+          "${pkgs.vscode-json-languageserver}/bin/vscode-json-languageserver"
+          "--stdio"
+        ];
+      };
       cmake.enable = true;
       intelephense = {
         enable = true;
