@@ -5,6 +5,10 @@ let
     3
     4
     5
+    6
+    7
+    8
+    9
   ];
 
   harpoonSelect =
@@ -43,15 +47,33 @@ in
   programs.nixvim.keymaps = [
     {
       mode = "n";
-      key = "<leader>w";
+      key = "<C-s>";
       action = "<cmd>w<cr>";
       options.desc = "Write";
     }
     {
       mode = "n";
-      key = "<leader>q";
-      action = "<cmd>q<cr>";
-      options.desc = "Quit";
+      key = "<leader>qq";
+      action = "<cmd>qa<cr>";
+      options.desc = "Quit all";
+    }
+    {
+      mode = "n";
+      key = "<leader>-";
+      action = "<C-w>s";
+      options.desc = "Split below";
+    }
+    {
+      mode = "n";
+      key = "<leader>|";
+      action = "<C-w>v";
+      options.desc = "Split right";
+    }
+    {
+      mode = "n";
+      key = "<leader>wd";
+      action = "<cmd>close<cr>";
+      options.desc = "Close window";
     }
     {
       mode = "n";
@@ -204,9 +226,27 @@ in
     }
     {
       mode = "n";
-      key = "<leader>sr";
+      key = "<leader>sR";
       action = "<cmd>FzfLua lsp_references<cr>";
-      options.desc = "References";
+      options.desc = "LSP references";
+    }
+    {
+      mode = [
+        "n"
+        "v"
+      ];
+      key = "<leader>sr";
+      action.__raw = ''
+        function()
+          local grug = require("grug-far")
+          local options = { transient = true }
+          if vim.fn.mode():find("v") then
+            options.prefills = { search = vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() }) }
+          end
+          grug.open(options)
+        end
+      '';
+      options.desc = "Search and replace";
     }
     {
       mode = "n";
@@ -376,6 +416,24 @@ in
     }
     {
       mode = "n";
+      key = "<leader>bD";
+      action = "<cmd>close<cr>";
+      options.desc = "Close window";
+    }
+    {
+      mode = "n";
+      key = "<leader>bo";
+      action.__raw = "_G.KaneDeleteOtherBuffers";
+      options.desc = "Delete other buffers";
+    }
+    {
+      mode = "n";
+      key = "<leader>bh";
+      action.__raw = "_G.KaneDeleteHiddenBuffers";
+      options.desc = "Delete hidden buffers";
+    }
+    {
+      mode = "n";
       key = "<leader>cf";
       action.__raw = ''
         function()
@@ -393,12 +451,19 @@ in
     {
       mode = "n";
       key = "<leader>cr";
-      action.__raw = "vim.lsp.buf.rename";
-      options.desc = "Rename";
+      action.__raw = ''
+        function()
+          return ":" .. require("inc_rename.config").cmd_name .. " " .. vim.fn.expand("<cword>")
+        end
+      '';
+      options = {
+        desc = "Rename";
+        expr = true;
+      };
     }
     {
       mode = "n";
-      key = "<leader>ha";
+      key = "<leader>H";
       action.__raw = ''
         function()
           require("harpoon"):list():add()
@@ -408,7 +473,7 @@ in
     }
     {
       mode = "n";
-      key = "<leader>hh";
+      key = "<leader>h";
       action.__raw = ''
         function()
           local harpoon = require("harpoon")
@@ -416,6 +481,36 @@ in
         end
       '';
       options.desc = "Harpoon menu";
+    }
+    {
+      mode = "n";
+      key = "<leader>cp";
+      action = "<cmd>MarkdownPreviewToggle<cr>";
+      options.desc = "Markdown preview";
+    }
+    {
+      mode = "n";
+      key = "<leader>um";
+      action = "<cmd>RenderMarkdown toggle<cr>";
+      options.desc = "Toggle rendered Markdown";
+    }
+    {
+      mode = "n";
+      key = "<leader>qs";
+      action.__raw = "function() require('persistence').load() end";
+      options.desc = "Restore session";
+    }
+    {
+      mode = "n";
+      key = "<leader>qS";
+      action.__raw = "function() require('persistence').select() end";
+      options.desc = "Select session";
+    }
+    {
+      mode = "n";
+      key = "<leader>qd";
+      action.__raw = "function() require('persistence').stop() end";
+      options.desc = "Do not save session";
     }
     {
       mode = "v";
@@ -536,12 +631,6 @@ in
     }
     {
       mode = "n";
-      key = "gD";
-      action.__raw = "vim.lsp.buf.declaration";
-      options.desc = "Goto declaration";
-    }
-    {
-      mode = "n";
       key = "gr";
       action.__raw = "vim.lsp.buf.references";
       options.desc = "References";
@@ -566,9 +655,63 @@ in
     }
     {
       mode = "n";
-      key = "<leader>rn";
-      action.__raw = "vim.lsp.buf.rename";
-      options.desc = "Rename";
+      key = "gD";
+      action.__raw = ''
+        function()
+          local client = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
+          if not client then
+            return vim.lsp.buf.declaration()
+          end
+          local params = vim.lsp.util.make_position_params(0, "utf-16")
+          client:exec_cmd({
+            command = "typescript.goToSourceDefinition",
+            arguments = { params.textDocument.uri, params.position },
+          }, { bufnr = 0 })
+        end
+      '';
+      options.desc = "Goto source definition";
+    }
+    {
+      mode = "n";
+      key = "gR";
+      action.__raw = ''
+        function()
+          local client = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
+          if client then
+            client:exec_cmd({
+              command = "typescript.findAllFileReferences",
+              arguments = { vim.uri_from_bufnr(0) },
+            }, { bufnr = 0 })
+          end
+        end
+      '';
+      options.desc = "File references";
+    }
+    {
+      mode = "n";
+      key = "<leader>cM";
+      action.__raw = ''
+        function()
+          vim.lsp.buf.code_action({ apply = true, context = { only = { "source.addMissingImports.ts" }, diagnostics = {} } })
+        end
+      '';
+      options.desc = "Add missing imports";
+    }
+    {
+      mode = "n";
+      key = "<leader>cD";
+      action.__raw = ''
+        function()
+          vim.lsp.buf.code_action({ apply = true, context = { only = { "source.fixAll.ts" }, diagnostics = {} } })
+        end
+      '';
+      options.desc = "Fix all TypeScript diagnostics";
+    }
+    {
+      mode = "n";
+      key = "<leader>cV";
+      action = "<cmd>VtsExec select_ts_version<cr>";
+      options.desc = "Select TypeScript version";
     }
     {
       mode = [
@@ -639,6 +782,162 @@ in
       key = "<Esc><Esc>";
       action = "<C-\\><C-n>";
       options.silent = true;
+    }
+    {
+      mode = "n";
+      key = "<C-/>";
+      action.__raw = "function() Snacks.terminal() end";
+      options.desc = "Toggle terminal";
+    }
+    {
+      mode = "n";
+      key = "<leader>ft";
+      action.__raw = "function() Snacks.terminal(nil, { cwd = _G.KaneProjectRoot(0) }) end";
+      options.desc = "Terminal (root dir)";
+    }
+    {
+      mode = [
+        "n"
+        "x"
+        "o"
+      ];
+      key = "s";
+      action.__raw = "function() require('flash').jump() end";
+      options.desc = "Flash";
+    }
+    {
+      mode = [
+        "n"
+        "x"
+        "o"
+      ];
+      key = "S";
+      action.__raw = "function() require('flash').treesitter() end";
+      options.desc = "Flash Treesitter";
+    }
+    {
+      mode = "o";
+      key = "r";
+      action.__raw = "function() require('flash').remote() end";
+      options.desc = "Remote Flash";
+    }
+    {
+      mode = "n";
+      key = "<leader>db";
+      action.__raw = "function() require('dap').toggle_breakpoint() end";
+      options.desc = "Toggle breakpoint";
+    }
+    {
+      mode = "n";
+      key = "<leader>dB";
+      action.__raw = ''
+        function()
+          require("dap").set_breakpoint(vim.fn.input("Breakpoint condition: "))
+        end
+      '';
+      options.desc = "Conditional breakpoint";
+    }
+    {
+      mode = "n";
+      key = "<leader>dc";
+      action.__raw = "function() require('dap').continue() end";
+      options.desc = "Run/continue";
+    }
+    {
+      mode = "n";
+      key = "<leader>da";
+      action.__raw = "function() require('dap').continue({ before = require('dap.ext.vscode').getconfigs }) end";
+      options.desc = "Run with arguments";
+    }
+    {
+      mode = "n";
+      key = "<leader>di";
+      action.__raw = "function() require('dap').step_into() end";
+      options.desc = "Step into";
+    }
+    {
+      mode = "n";
+      key = "<leader>do";
+      action.__raw = "function() require('dap').step_out() end";
+      options.desc = "Step out";
+    }
+    {
+      mode = "n";
+      key = "<leader>dO";
+      action.__raw = "function() require('dap').step_over() end";
+      options.desc = "Step over";
+    }
+    {
+      mode = "n";
+      key = "<leader>dr";
+      action.__raw = "function() require('dap').repl.toggle() end";
+      options.desc = "Toggle REPL";
+    }
+    {
+      mode = "n";
+      key = "<leader>dt";
+      action.__raw = "function() require('dap').terminate() end";
+      options.desc = "Terminate";
+    }
+    {
+      mode = "n";
+      key = "<leader>du";
+      action.__raw = "function() require('dapui').toggle() end";
+      options.desc = "Toggle DAP UI";
+    }
+    {
+      mode = "n";
+      key = "<leader>td";
+      action.__raw = "function() require('neotest').run.run({ strategy = 'dap' }) end";
+      options.desc = "Debug nearest test";
+    }
+    {
+      mode = "n";
+      key = "<leader>tr";
+      action.__raw = "function() require('neotest').run.run() end";
+      options.desc = "Run nearest test";
+    }
+    {
+      mode = "n";
+      key = "<leader>tf";
+      action.__raw = "function() require('neotest').run.run(vim.fn.expand('%')) end";
+      options.desc = "Run test file";
+    }
+    {
+      mode = "n";
+      key = "<leader>ta";
+      action.__raw = "function() require('neotest').run.run(vim.uv.cwd()) end";
+      options.desc = "Run all tests";
+    }
+    {
+      mode = "n";
+      key = "<leader>tl";
+      action.__raw = "function() require('neotest').run.run_last() end";
+      options.desc = "Run last test";
+    }
+    {
+      mode = "n";
+      key = "<leader>to";
+      action.__raw = "function() require('neotest').output.open({ enter = true, auto_close = true }) end";
+      options.desc = "Show test output";
+    }
+    {
+      mode = "n";
+      key = "<leader>ts";
+      action.__raw = "function() require('neotest').summary.toggle() end";
+      options.desc = "Toggle test summary";
+    }
+    {
+      mode = "n";
+      key = "<leader>tS";
+      action.__raw = "function() require('neotest').run.stop() end";
+      options.desc = "Stop test";
+    }
+    {
+      mode = "n";
+      key = "<leader>tw";
+      action.__raw = "function() require('neotest').watch.toggle(vim.fn.expand('%')) end";
+      options.desc = "Toggle test watch";
     }
   ]
   ++ map harpoonSelect harpoonSlots

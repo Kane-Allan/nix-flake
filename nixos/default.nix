@@ -13,7 +13,6 @@ let
 
   modules = [
     inputs.stylix.nixosModules.stylix
-    ./modules/android.nix
     ./modules/system
     ./modules/user.nix
     ./modules/theme.nix

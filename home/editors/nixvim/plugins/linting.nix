@@ -2,19 +2,14 @@
   programs.nixvim.plugins.lint = {
     enable = true;
     lintersByFt = {
-      javascript = [ "eslint_d" ];
-      javascriptreact = [ "eslint_d" ];
-      typescript = [ "eslint_d" ];
-      typescriptreact = [ "eslint_d" ];
-      vue = [ "eslint_d" ];
-      svelte = [ "eslint_d" ];
       nix = [
         "statix"
         "deadnix"
       ];
       sh = [ "shellcheck" ];
       bash = [ "shellcheck" ];
-      markdown = [ "markdownlint" ];
+      markdown = [ "markdownlint-cli2" ];
+      "markdown.mdx" = [ "markdownlint-cli2" ];
     };
     autoCmd = {
       event = [
@@ -24,14 +19,5 @@
       ];
       callback.__raw = "function() _G.KaneLint() end";
     };
-    linters.eslint_d.args = [
-      "--flag"
-      "unstable_native_nodejs_ts_config"
-      "--format"
-      "json"
-      "--stdin"
-      "--stdin-filename"
-      { __raw = "function() return vim.api.nvim_buf_get_name(0) end"; }
-    ];
   };
 }

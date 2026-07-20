@@ -3,10 +3,12 @@
   imports = [
     ./keymaps.nix
     ./plugins/completion.nix
+    ./plugins/dap.nix
     ./plugins/editor.nix
     ./plugins/formatting.nix
     ./plugins/linting.nix
     ./plugins/lsp.nix
+    ./plugins/testing.nix
   ];
 
   programs.nixvim = {
@@ -19,7 +21,7 @@
 
     globals = {
       mapleader = " ";
-      maplocalleader = " ";
+      maplocalleader = "\\";
       have_nerd_font = true;
     };
 
@@ -35,20 +37,65 @@
         vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
       end
 
-      _G.KaneDeleteBuffer = function()
-        local buf = vim.api.nvim_get_current_buf()
+      _G.KaneDeleteBuffer = function(buf)
+        buf = buf or vim.api.nvim_get_current_buf()
+
+        if not vim.api.nvim_buf_is_valid(buf) then
+          return
+        end
 
         if vim.bo[buf].modified then
           vim.notify("Buffer has unsaved changes", vim.log.levels.WARN)
           return
         end
 
-        local listed = vim.fn.getbufinfo({ buflisted = 1 })
-        if #listed > 1 then
-          vim.cmd("bprevious")
+        local candidates = vim.tbl_filter(function(info)
+          return info.bufnr ~= buf
+        end, vim.fn.getbufinfo({ buflisted = 1 }))
+        table.sort(candidates, function(a, b)
+          return a.lastused > b.lastused
+        end)
+
+        local fallback = candidates[1] and candidates[1].bufnr or vim.api.nvim_create_buf(true, false)
+
+        for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+          if vim.api.nvim_win_is_valid(win) then
+            local replacement = fallback
+            vim.api.nvim_win_call(win, function()
+              local alternate = vim.fn.bufnr("#")
+              if alternate >= 0
+                and alternate ~= buf
+                and vim.api.nvim_buf_is_valid(alternate)
+                and vim.bo[alternate].buflisted
+              then
+                replacement = alternate
+              end
+            end)
+            vim.api.nvim_win_set_buf(win, replacement)
+          end
         end
 
-        pcall(vim.api.nvim_buf_delete, buf, {})
+        local ok, err = pcall(vim.api.nvim_buf_delete, buf, {})
+        if not ok then
+          vim.notify(err, vim.log.levels.ERROR)
+        end
+      end
+
+      _G.KaneDeleteOtherBuffers = function()
+        local current = vim.api.nvim_get_current_buf()
+        for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+          if info.bufnr ~= current and info.changed == 0 then
+            _G.KaneDeleteBuffer(info.bufnr)
+          end
+        end
+      end
+
+      _G.KaneDeleteHiddenBuffers = function()
+        for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
+          if #vim.fn.win_findbuf(info.bufnr) == 0 and info.changed == 0 then
+            _G.KaneDeleteBuffer(info.bufnr)
+          end
+        end
       end
 
       _G.KaneLazyGit = function()
@@ -157,7 +204,7 @@
       foldmethod = "indent";
       foldtext = "";
       grepformat = "%f:%l:%c:%m";
-      grepprg = "rg #vimgrep";
+      grepprg = "rg --vimgrep";
       ignorecase = true;
       inccommand = "nosplit"; # preview incremental substitute
       jumpoptions = "view";
@@ -244,9 +291,12 @@
     extraPackages = with pkgs; [
       clang-tools
       cmake-language-server
-      eslint_d
+      csharpier
+      bash-language-server
+      deadnix
       fd
       fzf
+      fantomas
       intelephense
       lua-language-server
       nixfmt
@@ -256,11 +306,15 @@
       prettier
       prettierd
       ripgrep
+      shellcheck
+      statix
       stylua
       tailwindcss-language-server
       typescript
       vtsls
       vscode-langservers-extracted
+      markdownlint-cli2
+      markdown-toc
     ];
   };
 }

@@ -14,5 +14,6 @@
     usbutils
     lsof
     unrar
+    devenv
   ];
 }

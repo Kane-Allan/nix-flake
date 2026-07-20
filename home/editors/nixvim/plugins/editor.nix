@@ -11,6 +11,79 @@
       end,
     })
 
+    vim.api.nvim_create_autocmd({ "FocusGained", "TermClose", "TermLeave" }, {
+      command = "checktime",
+    })
+
+    vim.api.nvim_create_autocmd("TextYankPost", {
+      callback = function()
+        vim.highlight.on_yank()
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("VimResized", {
+      callback = function()
+        local current = vim.fn.tabpagenr()
+        vim.cmd("tabdo wincmd =")
+        vim.cmd("tabnext " .. current)
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("BufReadPost", {
+      callback = function(event)
+        local mark = vim.api.nvim_buf_get_mark(event.buf, '"')
+        local lines = vim.api.nvim_buf_line_count(event.buf)
+        if mark[1] > 0 and mark[1] <= lines then
+          pcall(vim.api.nvim_win_set_cursor, 0, mark)
+        end
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = { "markdown", "markdown.mdx", "gitcommit" },
+      callback = function()
+        vim.opt_local.wrap = true
+        vim.opt_local.spell = true
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = { "json", "jsonc", "json5" },
+      callback = function()
+        vim.opt_local.conceallevel = 0
+      end,
+    })
+
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      callback = function(event)
+        if event.match:match("^%w%w+://") then
+          return
+        end
+        local dir = vim.fs.dirname(event.match)
+        if dir then
+          vim.fn.mkdir(dir, "p")
+        end
+      end,
+    })
+
+    vim.filetype.add({
+      extension = {
+        mdx = "markdown.mdx",
+        rasi = "rasi",
+        rofi = "rasi",
+        wofi = "rasi",
+      },
+      filename = { vifmrc = "vim" },
+      pattern = {
+        [".*/waybar/config"] = "jsonc",
+        [".*/mako/config"] = "dosini",
+        [".*/kitty/.+%.conf"] = "kitty",
+        [".*/hypr/.+%.conf"] = "hyprlang",
+        ["%.env%.[%w_.-]+"] = "sh",
+      },
+    })
+    vim.treesitter.language.register("bash", "kitty")
+
     local ok, fzf_lua = pcall(require, "fzf-lua")
     if ok then
       fzf_lua.register_ui_select()
@@ -74,7 +147,21 @@
       };
     };
     gitsigns.enable = true;
-    harpoon.enable = true;
+    harpoon = {
+      enable = true;
+      settings.settings.save_on_toggle = true;
+    };
+    flash.enable = true;
+    grug-far.enable = true;
+    inc-rename.enable = true;
+    lazydev.enable = true;
+    persistence.enable = true;
+    schemastore = {
+      enable = true;
+      yaml.enable = false;
+    };
+    markdown-preview.enable = true;
+    ts-autotag.enable = true;
     nvim-autopairs.enable = true;
     nvim-surround.enable = true;
     render-markdown.enable = true;
@@ -95,6 +182,7 @@
       enable = true;
       settings = {
         delay = 250;
+        preset = "modern";
         spec = [
           {
             __unkeyed-1 = "<leader>b";
@@ -103,6 +191,10 @@
           {
             __unkeyed-1 = "<leader>c";
             group = "Code";
+          }
+          {
+            __unkeyed-1 = "<leader>d";
+            group = "Debug";
           }
           {
             __unkeyed-1 = "<leader>f";
@@ -133,6 +225,18 @@
             group = "UI";
           }
           {
+            __unkeyed-1 = "<leader>t";
+            group = "Test";
+          }
+          {
+            __unkeyed-1 = "<leader>w";
+            group = "Windows";
+          }
+          {
+            __unkeyed-1 = "<leader>q";
+            group = "Quit/Session";
+          }
+          {
             __unkeyed-1 = "<leader>x";
             group = "Diagnostics";
           }
@@ -155,6 +259,7 @@
         presets = {
           bottom_search = true;
           command_palette = true;
+          inc_rename = true;
           long_message_to_split = true;
         };
         routes = [
@@ -180,6 +285,20 @@
     };
 
     treesitter-textobjects.enable = true;
+
+    snacks = {
+      enable = true;
+      settings = {
+        bigfile.enabled = true;
+        quickfile.enabled = true;
+        notifier.enabled = false;
+        terminal = {
+          enabled = true;
+          win.wo.winbar = "";
+        };
+        scratch.enabled = true;
+      };
+    };
 
     neo-tree = {
       enable = true;

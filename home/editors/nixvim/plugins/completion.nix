@@ -2,6 +2,7 @@
   programs.nixvim.plugins = {
     luasnip.enable = true;
     friendly-snippets.enable = true;
+    cmp-git.enable = true;
 
     cmp = {
       enable = true;
@@ -42,6 +43,7 @@
           { name = "luasnip"; }
           { name = "path"; }
           { name = "buffer"; }
+          { name = "git"; }
         ];
         window = {
           completion.__raw = "cmp.config.window.bordered()";
