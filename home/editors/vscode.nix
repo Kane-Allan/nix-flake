@@ -72,6 +72,7 @@
         rangav.vscode-thunder-client
         redhat.vscode-yaml
         openai.chatgpt
+        datakurre.devenv
 
         # UI
         usernamehw.errorlens

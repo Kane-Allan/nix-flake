@@ -28,7 +28,7 @@
   };
 
   outputs =
-    { ... }@inputs:
+    { inputs, ... }:
     let
       system = "x86_64-linux";
     in
