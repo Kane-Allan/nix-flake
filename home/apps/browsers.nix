@@ -2,6 +2,7 @@
 let
   isPersonal = vars.host == "laptop";
   profileName = if isPersonal then "Personal" else "Work";
+  profileStoreId = if isPersonal then "1f8860a5" else "6327d5d1";
 
   mkExtension = slug: default_area: {
     install_url = "https://addons.mozilla.org/firefox/downloads/latest/${slug}/latest.xpi";
@@ -81,6 +82,8 @@ in
   programs.firefox = {
     enable = true;
 
+    configPath = ".mozilla/firefox";
+
     policies = {
       AIControls.Default = {
         Value = "blocked";
@@ -95,6 +98,8 @@ in
       id = 0;
       name = profileName;
       isDefault = true;
+      storeId = profileStoreId;
+      extensions.force = true;
 
       settings = {
         "sidebar.revamp" = true;

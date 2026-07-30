@@ -2,7 +2,11 @@
 {
   home-manager.sharedModules = [
     {
-      stylix.targets.firefox.profileNames = [ (if vars.host == "laptop" then "Personal" else "Work") ];
+      stylix.targets.firefox = {
+        profileNames = [ (if vars.host == "laptop" then "Personal" else "Work") ];
+        firefoxGnomeTheme.enable = true;
+        colorTheme.enable = true;
+      };
     }
   ];
 

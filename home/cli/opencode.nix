@@ -1,3 +1,4 @@
+{ pkgs, ... }:
 {
   programs.opencode = {
     enable = true;
@@ -9,5 +10,9 @@
       notifications = true;
       sound = true;
     };
+
+    extraPackages = with pkgs; [
+      libnotify
+    ];
   };
 }

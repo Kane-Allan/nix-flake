@@ -561,7 +561,7 @@ in
 
           bind = [
             (mkExecBind "SUPER + Return" tmuxTerminal)
-            (mkExecBind "SUPER + SHIFT + Return" "${pkgs.firefox}/bin/firefox")
+            (mkExecBind "SUPER + SHIFT + Return" "firefox")
             (mkExecBind "SUPER + Space" "${noctaliaMsg} panel-toggle launcher")
             (mkExecBind "SUPER + C" "${noctaliaMsg} panel-toggle control-center")
             (mkExecBind "SUPER + comma" "${noctaliaMsg} settings-toggle")
