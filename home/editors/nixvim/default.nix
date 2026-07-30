@@ -23,21 +23,22 @@
       mapleader = " ";
       maplocalleader = "\\";
       have_nerd_font = true;
+      tmux_navigator_no_mappings = true;
     };
 
     extraConfigLuaPre = ''
-      _G.KaneProjectRoot = function(bufnr)
+      _G.ProjectRoot = function(bufnr)
         bufnr = bufnr or 0
         return vim.fs.root(bufnr, { ".git", "flake.nix", "package.json", "composer.json" }) or vim.fn.getcwd()
       end
 
-      _G.KaneToggleInlayHints = function()
+      _G.ToggleInlayHints = function()
         local bufnr = vim.api.nvim_get_current_buf()
         local enabled = vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr })
         vim.lsp.inlay_hint.enable(not enabled, { bufnr = bufnr })
       end
 
-      _G.KaneDeleteBuffer = function(buf)
+      _G.DeleteBuffer = function(buf)
         buf = buf or vim.api.nvim_get_current_buf()
 
         if not vim.api.nvim_buf_is_valid(buf) then
@@ -81,24 +82,24 @@
         end
       end
 
-      _G.KaneDeleteOtherBuffers = function()
+      _G.DeleteOtherBuffers = function()
         local current = vim.api.nvim_get_current_buf()
         for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
           if info.bufnr ~= current and info.changed == 0 then
-            _G.KaneDeleteBuffer(info.bufnr)
+            _G.DeleteBuffer(info.bufnr)
           end
         end
       end
 
-      _G.KaneDeleteHiddenBuffers = function()
+      _G.DeleteHiddenBuffers = function()
         for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
           if #vim.fn.win_findbuf(info.bufnr) == 0 and info.changed == 0 then
-            _G.KaneDeleteBuffer(info.bufnr)
+            _G.DeleteBuffer(info.bufnr)
           end
         end
       end
 
-      _G.KaneLazyGit = function()
+      _G.LazyGit = function()
         local width = math.floor(vim.o.columns * 0.9)
         local height = math.floor(vim.o.lines * 0.9)
         local row = math.floor((vim.o.lines - height) / 2)
@@ -124,7 +125,7 @@
         vim.cmd("startinsert")
       end
 
-      _G.KaneLint = function()
+      _G.Lint = function()
         local js_like = {
           javascript = true,
           javascriptreact = true,

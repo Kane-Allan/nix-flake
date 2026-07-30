@@ -26,17 +26,13 @@
     '';
   };
 
-  programs = {
-    # nix-ld.enable = true;
-
-    nh = {
+  programs.nh = {
+    enable = true;
+    inherit (vars) flake;
+    clean = {
       enable = true;
-      flake = vars.flake;
-      clean = {
-        enable = true;
-        dates = "daily";
-        extraArgs = "--delete-older-than 7d --keep 3";
-      };
+      dates = "daily";
+      extraArgs = "--delete-older-than 7d --keep 3";
     };
   };
 }

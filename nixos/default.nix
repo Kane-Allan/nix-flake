@@ -6,7 +6,7 @@ let
     flake = "/home/kane/nix-flake";
 
     terminal = "ghostty";
-    browser = "brave";
+    browser = "firefox";
   };
 
   system = "x86_64-linux";
@@ -30,9 +30,6 @@ in
           scale = "2";
           resolution = "2944x1840@90";
         };
-
-        # Bongo Cat validates this as a literal /dev/input/eventN and rejects stable by-path symlinks.
-        noctalia.bongocat.inputDevice = "/dev/input/event0";
       };
     in
     inputs.nixpkgs.lib.nixosSystem {
@@ -49,12 +46,14 @@ in
 
         inputs.home-manager.nixosModules.default
         {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs vars;
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = {
+              inherit inputs vars;
+            };
+            users.${vars.user} = import ../home;
           };
-          home-manager.users.${vars.user} = import ../home;
         }
       ]
       ++ modules;
@@ -85,12 +84,14 @@ in
 
         inputs.home-manager.nixosModules.default
         {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.extraSpecialArgs = {
-            inherit inputs vars;
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            extraSpecialArgs = {
+              inherit inputs vars;
+            };
+            users.${vars.user} = import ../home;
           };
-          home-manager.users.${vars.user} = import ../home;
         }
       ]
       ++ modules;

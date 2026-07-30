@@ -3,14 +3,10 @@
   home.packages = with pkgs; [
     bat
     dua
-    dust
     jq
-    p7zip
     xh
     yq
     unzip
-    nodejs
-    pnpm
     usbutils
     lsof
     unrar

@@ -17,7 +17,7 @@
         "BufWritePost"
         "InsertLeave"
       ];
-      callback.__raw = "function() _G.KaneLint() end";
+      callback.__raw = "function() _G.Lint() end";
     };
   };
 }

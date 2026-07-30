@@ -47,22 +47,24 @@ in
     ./hardware-configuration.nix
   ];
 
-  boot.loader = {
-    systemd-boot = {
-      enable = true;
-      configurationLimit = 5;
+  boot = {
+    loader = {
+      systemd-boot = {
+        enable = true;
+        configurationLimit = 5;
+      };
+
+      efi.canTouchEfiVariables = true;
     };
 
-    efi.canTouchEfiVariables = true;
+    kernelParams = [
+      "amdgpu.sg_display=0"
+    ];
+
+    extraModprobeConfig = ''
+      options mt7925e disable_aspm=1
+    '';
   };
-
-  boot.kernelParams = [
-    "amdgpu.sg_display=0"
-  ];
-
-  boot.extraModprobeConfig = ''
-    options mt7925e disable_aspm=1
-  '';
 
   environment.systemPackages = with pkgs; [
     bolt-launcher
@@ -72,14 +74,6 @@ in
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
-  };
-
-  programs.chromium = {
-    enable = true;
-
-    defaultSearchProviderEnabled = true;
-    defaultSearchProviderSearchURL = "https://searxng.enak-nalla.dev/search?q={searchTerms}";
-    defaultSearchProviderSuggestURL = "https://searxng.enak-nalla.dev/autocompleter?q={searchTerms}";
   };
 
   environment.etc."systemd/system-sleep/amd-pstate-resume".source = amdPstateResume;

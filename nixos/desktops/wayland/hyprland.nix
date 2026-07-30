@@ -167,32 +167,6 @@ in
       '';
     in
     {
-      services.hypridle = {
-        enable = true;
-        settings = {
-          general = {
-            lock_cmd = lockCommand;
-            ignore_dbus_inhibit = false;
-            before_sleep_cmd = "${pkgs.systemd}/bin/loginctl lock-session";
-            after_sleep_cmd = "hyprctl dispatch dpms on";
-          };
-
-          listener = [
-            {
-              # suspend after 30 mins; before_sleep_cmd locks first.
-              timeout = 1800;
-              on-timeout = "${pkgs.systemd}/bin/systemctl suspend";
-            }
-            {
-              # turn screen off after 15 mins
-              timeout = 900;
-              on-timeout = "hyprctl dispatch dpms off";
-              on-resume = "hyprctl dispatch dpms on";
-            }
-          ];
-        };
-      };
-
       wayland.windowManager.hyprland = {
         enable = true;
         systemd.enable = false;
@@ -587,7 +561,7 @@ in
 
           bind = [
             (mkExecBind "SUPER + Return" tmuxTerminal)
-            (mkExecBind "SUPER + SHIFT + Return" "${pkgs.brave}/bin/brave")
+            (mkExecBind "SUPER + SHIFT + Return" "${pkgs.firefox}/bin/firefox")
             (mkExecBind "SUPER + Space" "${noctaliaMsg} panel-toggle launcher")
             (mkExecBind "SUPER + C" "${noctaliaMsg} panel-toggle control-center")
             (mkExecBind "SUPER + comma" "${noctaliaMsg} settings-toggle")

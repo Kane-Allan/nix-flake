@@ -80,7 +80,7 @@ in
       key = "<leader>e";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           vim.cmd("Neotree toggle dir=" .. vim.fn.fnameescape(root))
         end
       '';
@@ -97,7 +97,7 @@ in
       key = "<leader>fe";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           vim.cmd("Neotree toggle dir=" .. vim.fn.fnameescape(root))
         end
       '';
@@ -114,7 +114,7 @@ in
       key = "<leader><space>";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           require("fzf-lua").files({ cwd = root })
         end
       '';
@@ -125,7 +125,7 @@ in
       key = "<leader>/";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           require("fzf-lua").live_grep({ cwd = root })
         end
       '';
@@ -136,7 +136,7 @@ in
       key = "<leader>ff";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           require("fzf-lua").files({ cwd = root })
         end
       '';
@@ -153,7 +153,7 @@ in
       key = "<leader>fg";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           require("fzf-lua").live_grep({ cwd = root })
         end
       '';
@@ -170,7 +170,7 @@ in
       key = "<leader>sg";
       action.__raw = ''
         function()
-          local root = _G.KaneProjectRoot(0)
+          local root = _G.ProjectRoot(0)
           require("fzf-lua").live_grep({ cwd = root })
         end
       '';
@@ -239,14 +239,17 @@ in
       action.__raw = ''
         function()
           local grug = require("grug-far")
-          local options = { transient = true }
+          local options = {
+            transient = true,
+            prefills = { paths = _G.ProjectRoot(0) },
+          }
           if vim.fn.mode():find("v") then
-            options.prefills = { search = vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() }) }
+            options.prefills.search = vim.fn.getregion(vim.fn.getpos("."), vim.fn.getpos("v"), { type = vim.fn.mode() })
           end
           grug.open(options)
         end
       '';
-      options.desc = "Search and replace";
+      options.desc = "Search and replace (root dir)";
     }
     {
       mode = "n";
@@ -303,7 +306,7 @@ in
     {
       mode = "n";
       key = "<leader>gg";
-      action.__raw = "_G.KaneLazyGit";
+      action.__raw = "_G.LazyGit";
       options.desc = "LazyGit";
     }
     {
@@ -411,7 +414,7 @@ in
     {
       mode = "n";
       key = "<leader>bd";
-      action.__raw = "_G.KaneDeleteBuffer";
+      action.__raw = "_G.DeleteBuffer";
       options.desc = "Delete buffer";
     }
     {
@@ -423,13 +426,13 @@ in
     {
       mode = "n";
       key = "<leader>bo";
-      action.__raw = "_G.KaneDeleteOtherBuffers";
+      action.__raw = "_G.DeleteOtherBuffers";
       options.desc = "Delete other buffers";
     }
     {
       mode = "n";
       key = "<leader>bh";
-      action.__raw = "_G.KaneDeleteHiddenBuffers";
+      action.__raw = "_G.DeleteHiddenBuffers";
       options.desc = "Delete hidden buffers";
     }
     {
@@ -445,7 +448,7 @@ in
     {
       mode = "n";
       key = "<leader>ci";
-      action.__raw = "_G.KaneToggleInlayHints";
+      action.__raw = "_G.ToggleInlayHints";
       options.desc = "Toggle inlay hints";
     }
     {
@@ -453,7 +456,7 @@ in
       key = "<leader>cr";
       action.__raw = ''
         function()
-          return ":" .. require("inc_rename.config").cmd_name .. " " .. vim.fn.expand("<cword>")
+          return ":IncRename " .. vim.fn.expand("<cword>")
         end
       '';
       options = {
@@ -742,7 +745,10 @@ in
     }
 
     {
-      mode = "n";
+      mode = [
+        "n"
+        "t"
+      ];
       key = "<C-h>";
       action = "<cmd>TmuxNavigateLeft<cr>";
       options = {
@@ -751,7 +757,10 @@ in
       };
     }
     {
-      mode = "n";
+      mode = [
+        "n"
+        "t"
+      ];
       key = "<C-j>";
       action = "<cmd>TmuxNavigateDown<cr>";
       options = {
@@ -760,7 +769,10 @@ in
       };
     }
     {
-      mode = "n";
+      mode = [
+        "n"
+        "t"
+      ];
       key = "<C-k>";
       action = "<cmd>TmuxNavigateUp<cr>";
       options = {
@@ -769,7 +781,10 @@ in
       };
     }
     {
-      mode = "n";
+      mode = [
+        "n"
+        "t"
+      ];
       key = "<C-l>";
       action = "<cmd>TmuxNavigateRight<cr>";
       options = {
@@ -784,7 +799,10 @@ in
       options.silent = true;
     }
     {
-      mode = "n";
+      mode = [
+        "n"
+        "t"
+      ];
       key = "<C-/>";
       action.__raw = "function() Snacks.terminal() end";
       options.desc = "Toggle terminal";
@@ -792,7 +810,7 @@ in
     {
       mode = "n";
       key = "<leader>ft";
-      action.__raw = "function() Snacks.terminal(nil, { cwd = _G.KaneProjectRoot(0) }) end";
+      action.__raw = "function() Snacks.terminal(nil, { cwd = _G.ProjectRoot(0) }) end";
       options.desc = "Terminal (root dir)";
     }
     {

@@ -1,14 +1,9 @@
 {
   inputs,
   vars,
-  pkgs,
   ...
 }:
 {
-  environment.systemPackages = with pkgs; [
-    evtest
-  ];
-
   home-manager.users.${vars.user} = {
     imports = [ inputs.noctalia.homeModules.default ];
 

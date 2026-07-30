@@ -1,11 +1,8 @@
-{ pkgs, ... }:
-let
-  opencode = pkgs.callPackage ../../pkgs/opencode-bin { };
-in
 {
   programs.opencode = {
     enable = true;
-    package = opencode;
+
+    settings.autoupdate = false;
 
     tui.attention = {
       enabled = true;

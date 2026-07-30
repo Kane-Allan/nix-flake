@@ -19,6 +19,7 @@
       battery
       cpu
     ];
+
     extraConfig = ''
       unbind C-b
       bind C-Space send-prefix

@@ -1,12 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, vars, ... }:
 {
-
   home-manager.sharedModules = [
     {
-      stylix.targets.firefox.profileNames = [
-        "Personal"
-        "Work"
-      ];
+      stylix.targets.firefox.profileNames = [ (if vars.host == "laptop" then "Personal" else "Work") ];
     }
   ];
 

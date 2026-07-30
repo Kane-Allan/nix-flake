@@ -54,12 +54,11 @@ in
 
   nixpkgs.config.segger-jlink.acceptLicense = true;
 
-  services.teamviewer.enable = true;
+  users = {
+    groups.pico = { };
 
-  services.udev.packages = [ pkgs.picoscope.rules ];
-
-  users.groups.pico = { };
-  users.users.${vars.user}.extraGroups = [ "pico" ];
+    users.${vars.user}.extraGroups = [ "pico" ];
+  };
 
   swapDevices = [
     {
@@ -68,54 +67,60 @@ in
     }
   ];
 
-  services.udev.extraRules = ''
-    # unload ftdi_sio driver for hyper racks
-    ACTION=="add", SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", RUN+="${unbind-ftdi-sio} %k"
+  services = {
+    teamviewer.enable = true;
 
-    # allow non-root users to access tty
-    SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="dialout", MODE="0660", TAG+="uaccess"
-  '';
+    udev = {
+      packages = [ pkgs.picoscope.rules ];
 
-  services.openvpn = {
-    servers = {
-      work = {
-        config = "config /mnt/shared/.secrets/OVPN/work.ovpn";
-        autoStart = false;
-        up = ''
-          dns_route_file=/run/openvpn-work-preserved-dns-routes
-          vpn_dns="''${ifconfig_local%.*}.1"
+      extraRules = ''
+        ACTION=="add", SUBSYSTEM=="usb", DRIVER=="ftdi_sio", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015", RUN+="${unbind-ftdi-sio} %k"
 
-          if [ -n "''${route_net_gateway:-}" ]; then
-            : > "$dns_route_file"
+        SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="dialout", MODE="0660", TAG+="uaccess"
+      '';
+    };
 
-            ${pkgs.systemd}/bin/resolvectl dns \
-              | ${pkgs.gnugrep}/bin/grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' \
-              | while read -r dns_server; do
-                if ${pkgs.iproute2}/bin/ip route replace "$dns_server/32" via "$route_net_gateway"; then
-                  printf '%s\n' "$dns_server" >> "$dns_route_file"
-                fi
-              done
-          fi
+    openvpn = {
+      servers = {
+        work = {
+          config = "config /mnt/shared/.secrets/OVPN/work.ovpn";
+          autoStart = false;
+          up = ''
+            dns_route_file=/run/openvpn-work-preserved-dns-routes
+            vpn_dns="''${ifconfig_local%.*}.1"
 
-          if [ -n "$vpn_dns" ]; then
-            ${pkgs.systemd}/bin/resolvectl dns "$dev" "$vpn_dns"
-            ${pkgs.systemd}/bin/resolvectl default-route "$dev" false
-            ${pkgs.systemd}/bin/resolvectl domain "$dev" "~internal"
-          fi
-        '';
-        down = ''
-          dns_route_file=/run/openvpn-work-preserved-dns-routes
+            if [ -n "''${route_net_gateway:-}" ]; then
+              : > "$dns_route_file"
 
-          if [ -r "$dns_route_file" ]; then
-            while read -r dns_server; do
-              ${pkgs.iproute2}/bin/ip route del "$dns_server/32" 2>/dev/null || true
-            done < "$dns_route_file"
+              ${pkgs.systemd}/bin/resolvectl dns \
+                | ${pkgs.gnugrep}/bin/grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}' \
+                | while read -r dns_server; do
+                  if ${pkgs.iproute2}/bin/ip route replace "$dns_server/32" via "$route_net_gateway"; then
+                    printf '%s\n' "$dns_server" >> "$dns_route_file"
+                  fi
+                done
+            fi
 
-            rm -f "$dns_route_file"
-          fi
+            if [ -n "$vpn_dns" ]; then
+              ${pkgs.systemd}/bin/resolvectl dns "$dev" "$vpn_dns"
+              ${pkgs.systemd}/bin/resolvectl default-route "$dev" false
+              ${pkgs.systemd}/bin/resolvectl domain "$dev" "~internal"
+            fi
+          '';
+          down = ''
+            dns_route_file=/run/openvpn-work-preserved-dns-routes
 
-          ${pkgs.systemd}/bin/resolvectl revert "$dev" || true
-        '';
+            if [ -r "$dns_route_file" ]; then
+              while read -r dns_server; do
+                ${pkgs.iproute2}/bin/ip route del "$dns_server/32" 2>/dev/null || true
+              done < "$dns_route_file"
+
+              rm -f "$dns_route_file"
+            fi
+
+            ${pkgs.systemd}/bin/resolvectl revert "$dev" || true
+          '';
+        };
       };
     };
   };
